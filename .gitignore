@@ -1,0 +1,22 @@
+# Maven build output
+/target/
+
+# Playwright generated files
+/videos/
+/test-results/
+
+# Log files
+*.log
+
+# IDE specific files
+.idea/
+*.iml
+*.iws
+.classpath
+.project
+.settings/
+
+# OS generated files
+.DS_Store
+Thumbs.db
+
