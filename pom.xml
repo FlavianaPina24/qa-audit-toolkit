@@ -9,58 +9,65 @@
     <version>1.0-SNAPSHOT</version>
 
     <properties>
-        <maven.compiler.source>17</maven.compiler.source>
-        <maven.compiler.target>17</maven.compiler.target>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+        <maven.compiler.source>11</maven.compiler.source>
+        <maven.compiler.target>11</maven.compiler.target>
+        <junit.version>5.10.2</junit.version>
+        <playwright.version>1.44.0</playwright.version>
+        <extentreports.version>5.1.1</extentreports.version>
     </properties>
 
     <dependencies>
-        <!-- Playwright para automação web -->
+        <!-- Playwright para automação de navegador e asserções -->
         <dependency>
             <groupId>com.microsoft.playwright</groupId>
             <artifactId>playwright</artifactId>
-            <version>1.46.0</version>
+            <version>${playwright.version}</version>
         </dependency>
 
-        <!-- JUnit 5 completo (API + Engine) -->
+        <!-- JUnit 5 para a estrutura de testes -->
         <dependency>
             <groupId>org.junit.jupiter</groupId>
-            <artifactId>junit-jupiter</artifactId>
-            <version>5.10.2</version>
+            <artifactId>junit-jupiter-api</artifactId>
+            <version>${junit.version}</version>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.junit.jupiter</groupId>
+            <artifactId>junit-jupiter-engine</artifactId>
+            <version>${junit.version}</version>
             <scope>test</scope>
         </dependency>
 
-        <!-- ExtentReports para relatórios -->
+        <!-- ExtentReports para relatórios de teste em HTML -->
         <dependency>
             <groupId>com.aventstack</groupId>
             <artifactId>extentreports</artifactId>
-            <version>5.1.2</version>
-        </dependency>
-
-        <!-- Axe-Core para auditoria de acessibilidade -->
-        <dependency>
-            <groupId>com.deque.html.axe-core</groupId>
-            <artifactId>playwright</artifactId>
-            <version>4.10.0</version>
+            <version>${extentreports.version}</version>
         </dependency>
     </dependencies>
 
     <build>
         <plugins>
-            <!-- Compilador Java -->
+            <!-- Plugin para compilar o código Java -->
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-compiler-plugin</artifactId>
-                <version>3.13.0</version>
+                <version>3.11.0</version>
+                <configuration>
+                    <source>${maven.compiler.source}</source>
+                    <target>${maven.compiler.target}</target>
+                </configuration>
             </plugin>
-
-            <!-- Surefire configurado para JUnit 5 -->
+            <!-- Plugin para executar os testes (Surefire) -->
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-surefire-plugin</artifactId>
-                <version>3.3.1</version>
+                <version>3.2.5</version>
                 <configuration>
-                    <useModulePath>false</useModulePath>
+                    <!-- Permite que os testes rodem em paralelo, se configurado -->
+                    <parallel>methods</parallel>
+                    <threadCount>4</threadCount>
                 </configuration>
             </plugin>
         </plugins>
