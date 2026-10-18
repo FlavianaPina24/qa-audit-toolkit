@@ -1,13 +1,13 @@
-name: Java CI
+name: Java CI & QA Audit
 
 on:
   push:
-    branches: [ main ]
+    branches: [ main, master ]
   pull_request:
-    branches: [ main ]
+    branches: [ main, master ]
 
 jobs:
-  build:
+  audit:
     runs-on: ubuntu-latest
 
     steps:
@@ -28,8 +28,19 @@ jobs:
           restore-keys: |
             ${{ runner.os }}-maven-
 
-      - name: Install Maven dependencies
-        run: mvn -B -q dependency:go-offline
+      - name: Install Playwright Browsers & OS Dependencies
+        run: mvn exec:java -e -D exec.mainClass=com.microsoft.playwright.CLI -D exec.args="install --with-deps"
 
-      - name: Run tests
-        run: mvn -B -q test
+      - name: Run QA Audit Tests
+        run: mvn -B test
+
+      - name: Upload Audit Reports & Screenshots
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: qa-audit-reports
+          path: |
+            target/Auditoria_Website_*.html
+            target/test-reports/
+            target/surefire-reports/
+          retention-days: 14

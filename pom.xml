@@ -45,6 +45,13 @@
             <artifactId>extentreports</artifactId>
             <version>${extentreports.version}</version>
         </dependency>
+
+        <!-- Axe-Core para auditoria de acessibilidade -->
+        <dependency>
+            <groupId>com.deque.html.axe-core</groupId>
+            <artifactId>playwright</artifactId>
+            <version>4.10.0</version>
+        </dependency>
     </dependencies>
 
     <build>
@@ -69,6 +76,12 @@
                     <parallel>methods</parallel>
                     <threadCount>4</threadCount>
                 </configuration>
+            </plugin>
+            <!-- Plugin para comandos CLI e instalação de navegadores Playwright -->
+            <plugin>
+                <groupId>org.codehaus.mojo</groupId>
+                <artifactId>exec-maven-plugin</artifactId>
+                <version>3.3.0</version>
             </plugin>
         </plugins>
     </build>
