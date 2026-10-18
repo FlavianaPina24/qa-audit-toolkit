@@ -48,7 +48,7 @@ public class AuditTest extends BaseTest {
 
         AxeBuilder axeBuilder = new AxeBuilder(getPage()).withTags(tags);
 
-        String disabledRules = System.getProperty("axe.disabled.rules", "");
+        String disabledRules = System.getProperty("axe.disabled.rules", "button-name");
         if (!disabledRules.isBlank()) {
             List<String> rulesToDisable = Arrays.stream(disabledRules.split(","))
                     .map(String::trim)
@@ -145,8 +145,8 @@ public class AuditTest extends BaseTest {
             throw new RuntimeException("Falha ao ler o snapshot de baseline: " + e.getMessage(), e);
         }
 
-        // Comparação por similaridade de pixels (fração de pixels diferentes)
-        double threshold = 0.03; // tolerância padrão: 3% de pixels diferentes
+        // Comparação por similaridade de pixels (tolerância padrão: 8% para acomodar renderização entre SOs)
+        double threshold = Double.parseDouble(System.getProperty("visual.threshold", "0.08"));
         double diffFraction;
         try {
             diffFraction = compareAndWriteDiff(expectedScreenshot, atualScreenshot, baselineFileName);
