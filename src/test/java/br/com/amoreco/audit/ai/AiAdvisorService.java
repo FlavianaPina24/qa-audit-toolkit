@@ -207,7 +207,7 @@ public class AiAdvisorService {
         String badge = isAiEnabled() ? "⚡ Powered by Gemini AI" : "💡 Heurística Blue Team (Modo Offline)";
         String badgeColor = isAiEnabled() ? "background: linear-gradient(135deg, #8a2387, #e94057, #f27121);" : "background: #4b6cb7;";
 
-        return "<div style='margin-top: 15px; border-radius: 8px; border: 1px solid #e1e4e8; background: #ffffff; box-shadow: 0 4px 12px rgba(0,0,0,0.05); overflow: hidden; font-family: -apple-system, BlinkMacSystemFont, Segoe UI, Roboto, Helvetica, Arial, sans-serif;'>" +
+        return "<div class='ai-advisor-card' style='margin-top: 15px; border-radius: 8px; border: 1px solid #e1e4e8; background: #ffffff; box-shadow: 0 4px 12px rgba(0,0,0,0.05); overflow: hidden; font-family: -apple-system, BlinkMacSystemFont, Segoe UI, Roboto, Helvetica, Arial, sans-serif;'>" +
                 "<div style='background: #24292e; color: #ffffff; padding: 10px 16px; display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 8px;'>" +
                 "<div style='display: flex; align-items: center; gap: 8px; font-weight: 600; font-size: 13.5px;'>" +
                 "<span style='font-size: 18px;'>🤖</span> <span>Agente de IA: " + category + "</span>" +
@@ -308,10 +308,10 @@ public class AiAdvisorService {
         // Escapar caracteres especiais que possam conflitar
         html = html.replace("<", "&lt;").replace(">", "&gt;");
 
-        // Code blocks
-        html = html.replaceAll("```[a-zA-Z]*\n([\\s\\S]*?)```", "<pre style='background: #1e1e1e; color: #d4d4d4; padding: 12px; border-radius: 6px; font-size: 12px; overflow-x: auto;'>$1</pre>");
+        // Code blocks - styled with !important to defeat ExtentReports Spark's global pre color: #222 !important
+        html = html.replaceAll("```[a-zA-Z]*\n([\\s\\S]*?)```", "<pre class='ai-code-block' style='background: #1e1e1e !important; color: #f0f6fc !important; padding: 12px; border-radius: 6px; font-size: 12px; border: 1px solid #30363d; overflow-x: auto;'><code style='color: #f0f6fc !important; background: transparent !important; font-family: Consolas, \"Courier New\", monospace;'>$1</code></pre>");
         // Inline code
-        html = html.replaceAll("`([^`]+)`", "<code style='background: #f0f2f5; color: #d63384; padding: 2px 5px; border-radius: 3px;'>$1</code>");
+        html = html.replaceAll("`([^`]+)`", "<code style='background: #f0f2f5 !important; color: #d63384 !important; padding: 2px 5px; border-radius: 3px; font-family: Consolas, monospace;'>$1</code>");
         // Bold
         html = html.replaceAll("\\*\\*([^*]+)\\*\\*", "<strong>$1</strong>");
         // Headers

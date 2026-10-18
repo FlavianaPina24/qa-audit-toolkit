@@ -85,7 +85,16 @@ public class BaseTest {
 
         String customCss =
                 "#parent-analysis, #events-analysis { min-height: 90px !important; }\n" +
-                "#timeline { min-height: 120px !important; }";
+                "#timeline { min-height: 120px !important; }\n" +
+                "pre.ai-code-block, pre.ai-code-block code, .ai-advisor-card pre, .ai-advisor-card pre code {\n" +
+                "    background-color: #1e1e1e !important;\n" +
+                "    color: #f0f6fc !important;\n" +
+                "    font-family: Consolas, 'Courier New', monospace !important;\n" +
+                "    border: 1px solid #30363d !important;\n" +
+                "}\n" +
+                ".ai-advisor-card code {\n" +
+                "    font-family: Consolas, 'Courier New', monospace !important;\n" +
+                "}";
 
         String customJs =
                 "$(document).ready(function() {\n" +
