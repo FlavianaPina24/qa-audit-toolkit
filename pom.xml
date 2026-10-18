@@ -72,9 +72,7 @@
                 <artifactId>maven-surefire-plugin</artifactId>
                 <version>3.2.5</version>
                 <configuration>
-                    <!-- Permite que os testes rodem em paralelo, se configurado -->
-                    <parallel>methods</parallel>
-                    <threadCount>4</threadCount>
+                    <!-- Execução sequencial para garantir que os cenários executem e apareçam no relatório na ordem exata de 1 a 9 -->
                 </configuration>
             </plugin>
             <!-- Plugin para comandos CLI e instalação de navegadores Playwright -->

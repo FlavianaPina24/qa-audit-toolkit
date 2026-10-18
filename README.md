@@ -19,14 +19,14 @@ Ele foi projetado para avaliar sites e aplicações web sob múltiplos pilares d
 | # | Cenário | Descrição |
 |---|---|---|
 | **Cenário 1** | **Acessibilidade com Axe-Core (A11y)** | Varredura completa com motor Deque Axe-Core em conformidade com **WCAG 2.0 e 2.1 (A e AA)**. Identifica violações por impacto (*Crítico*, *Sério*, *Moderado*, *Menor*), detalhando o seletor, trecho HTML e documentação corretiva. |
-| **Cenário 1B**| **Estrutura Semântica Básica** | Valida atributos obrigatórios de acessibilidade nativa, como `lang` no elemento `<html>` e presença de landmark `<main>`. |
-| **Cenário 2** | **Regressão Visual Automatizada** | Comparação de telas pixel a pixel contra baselines de referência, com tolerância configurável (`threshold`) e geração de mapas de calor visuais destacando alterações em vermelho. |
-| **Cenário 3** | **Estrutura da Página Inicial** | Validação de carregamento, título de aba e presença de títulos de cabeçalho (`h1`, `h2`). |
-| **Cenário 4** | **Imagens e Textos Alternativos** | Identifica imagens sem atributo `alt` ou com `alt` vazio que comprometem leitores de tela e SEO. |
-| **Cenário 5** | **Links e Rotas Válidas** | Detecta links sem `href`, vazios ou com chamadas obsoletas `javascript:`. |
+| **Cenário 2** | **Estrutura Semântica de Acessibilidade** | Valida atributos obrigatórios de acessibilidade nativa, como `lang` no elemento `<html>` e presença do landmark `<main>`. |
+| **Cenário 3** | **Estrutura da Página Inicial** | Validação de carregamento, integridade do título da página (`<title>`) e presença de títulos de cabeçalho (`h1`, `h2`). |
+| **Cenário 4** | **Imagens e Textos Alternativos** | Identifica imagens sem atributo `alt` ou com `alt` vazio que comprometem a navegação por leitores de tela e indexação de busca. |
+| **Cenário 5** | **Links e Rotas Válidas** | Detecta links quebrados, tags `<a>` sem `href`, URLs vazias ou com chamadas obsoletas de pseudo-protocolo `javascript:`. |
 | **Cenário 6** | **SEO Técnico** | Avalia tags essenciais (`<title>`, `<meta name="description">`), canonical tag, meta robots, tags Open Graph (`og:title`, `og:image`), hierarquia de cabeçalhos e disponibilidade de `robots.txt` e `sitemap.xml`. |
-| **Cenário 7** | **Segurança Web & Headers HTTP** | Inspeciona cabeçalhos de proteção (`HSTS`, `CSP`, `X-Frame-Options`, `X-Content-Type-Options`), detecção de risco de Reverse Tabnabbing em links `target="_blank"` sem `rel="noopener noreferrer"`, e conteúdo misto (*Mixed Content* HTTP em HTTPS). |
+| **Cenário 7** | **Segurança Web & Headers HTTP** | Inspeciona cabeçalhos de proteção (`HSTS`, `CSP`, `X-Frame-Options`, `X-Content-Type-Options`), proteção contra Reverse Tabnabbing em links `target="_blank"` (`rel="noopener noreferrer"`), e mitigação de conteúdo misto (*Mixed Content*). |
 | **Cenário 8** | **Performance & Web Vitals** | Coleta métricas de carregamento em tempo real via Navigation Timing API: **TTFB** (*Time to First Byte*), **FCP** (*First Contentful Paint*), **DOM Content Loaded**, tempo total de load e contagem de requisições de assets. |
+| **Cenário 9** | **Regressão Visual Automatizada** | Comparação de telas pixel a pixel contra baselines de referência, com estabilização de fontes/animações, tolerância adaptativa (`threshold`) e geração de mapas visuais de diff destacando alterações em vermelho. |
 
 ---
 

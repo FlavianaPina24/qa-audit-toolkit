@@ -10,8 +10,11 @@ import com.microsoft.playwright.options.LoadState;
 import org.junit.jupiter.api.BeforeEach;
 import java.util.stream.Collectors;
 import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.MethodOrderer;
+import org.junit.jupiter.api.Order;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestInfo;
+import org.junit.jupiter.api.TestMethodOrder;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
@@ -27,6 +30,7 @@ import javax.imageio.ImageIO;
 
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
+@TestMethodOrder(MethodOrderer.OrderAnnotation.class)
 public class AuditTest extends BaseTest {
 
     private final String targetUrl = System.getProperty("targetUrl", "https://flavianapina.com.br");
@@ -39,6 +43,7 @@ public class AuditTest extends BaseTest {
     }
 
     @Test
+    @Order(1)
     @DisplayName("CENÁRIO 1: Auditoria Completa de Acessibilidade (A11y) com Axe-Core")
     public void auditarAcessibilidadeAxe() {
         String tagsProperty = System.getProperty("axe.tags", "wcag2a,wcag2aa,wcag21a,wcag21aa");
@@ -93,7 +98,8 @@ public class AuditTest extends BaseTest {
     }
 
     @Test
-    @DisplayName("CENÁRIO 1B: Verificação semântica básica de acessibilidade")
+    @Order(2)
+    @DisplayName("CENÁRIO 2: Verificação Semântica Básica de Acessibilidade")
     public void verificarAcessibilidadeBasica() {
         String pageLanguage = getPage().getAttribute("html", "lang");
         getRelatorioTeste().info("Idioma da página detectado: " + pageLanguage);
@@ -109,20 +115,274 @@ public class AuditTest extends BaseTest {
         assertTrue(hasMain,
                 "A página deve ter um elemento <main> para uma estrutura semântica adequada.");
     }
+
     @Test
-    @DisplayName("CENÁRIO 2: Auditoria de Regressão Visual")
-    public void auditarConsistenciaVisual() {
-        // Estabiliza a página: aguarda rede ociosa, carregamento das fontes e pausa animações CSS
+    @Order(3)
+    @DisplayName("CENÁRIO 3: Verificação Básica da Página Inicial")
+    public void verificarPaginaInicial() {
+        String pageTitle = getPage().title();
+        getRelatorioTeste().info("Título da página carregada: " + pageTitle);
+
+        assertTrue(pageTitle != null && !pageTitle.isBlank(),
+                "O título da página não pode estar vazio.");
+
+        int headingCount = getPage().locator("main h1, main h2, header h1, header h2").count();
+        if (headingCount == 0) {
+            registrarEvidencia("Página inicial sem título detectado",
+                    getPage().screenshot(new Page.ScreenshotOptions().setFullPage(true)));
+        }
+        assertTrue(headingCount > 0,
+                "A página inicial deve conter pelo menos um título dentro de main ou header.");
+    }
+
+    @Test
+    @Order(4)
+    @DisplayName("CENÁRIO 4: Verificação de Imagens com Texto Alternativo")
+    public void verificarImagensAlt() {
+        int imagensSemAlt = getPage().locator("img:not([alt]), img[alt='']").count();
+        if (imagensSemAlt > 0) {
+            registrarEvidencia("Imagens sem atributo alt ou com alt vazio",
+                    getPage().screenshot(new Page.ScreenshotOptions().setFullPage(true)));
+        }
+
+        assertTrue(imagensSemAlt == 0,
+                "Todas as imagens devem ter atributo alt para acessibilidade.");
+    }
+
+    @Test
+    @Order(5)
+    @DisplayName("CENÁRIO 5: Verificação de Links Básicos")
+    public void verificarLinksValidos() {
+        int linksInvalidos = getPage().locator("a:not([href]), a[href=''], a[href^='javascript:']").count();
+        if (linksInvalidos > 0) {
+            registrarEvidencia("Links inválidos ou sem href detectados",
+                    getPage().screenshot(new Page.ScreenshotOptions().setFullPage(true)));
+        }
+
+        assertTrue(linksInvalidos == 0,
+                "Todos os links devem ter href válidos e não usar javascript:.");
+    }
+
+    @Test
+    @Order(6)
+    @DisplayName("CENÁRIO 6: Auditoria de SEO Técnico")
+    public void auditarSeoTecnico() {
+        StringBuilder seoReport = new StringBuilder();
+        seoReport.append("<div style='font-family: Arial, sans-serif;'>");
+        seoReport.append("<h4>🔍 Relatório de Auditoria de SEO Técnico</h4>");
+        seoReport.append("<table style='width:100%; border-collapse: collapse; margin-top: 10px;'>");
+        seoReport.append("<tr style='background: #f2f2f2; text-align: left;'>")
+                .append("<th style='padding: 8px; border: 1px solid #ddd;'>Item</th>")
+                .append("<th style='padding: 8px; border: 1px solid #ddd;'>Status</th>")
+                .append("<th style='padding: 8px; border: 1px solid #ddd;'>Detalhes</th></tr>");
+
+        int falhasSeo = 0;
+
+        // 1. Title
+        String title = getPage().title();
+        boolean titleOk = title != null && !title.isBlank();
+        int titleLength = titleOk ? title.length() : 0;
+        boolean titleLengthIdeal = titleLength >= 30 && titleLength <= 65;
+        adicionarLinhaTabela(seoReport, "Tag &lt;title&gt;", titleOk ? (titleLengthIdeal ? "✅ OK" : "⚠️ Atenção") : "❌ Falha",
+                titleOk ? "Conteúdo: \"" + escapeHtml(title) + "\" (" + titleLength + " caracteres - Ideal: 30-65)" : "Não encontrada");
+        if (!titleOk) falhasSeo++;
+
+        // 2. Meta Description
+        String metaDesc = getAttributeSafely("meta[name='description']", "content");
+        boolean descOk = metaDesc != null && !metaDesc.isBlank();
+        int descLength = descOk ? metaDesc.length() : 0;
+        boolean descLengthIdeal = descLength >= 70 && descLength <= 160;
+        adicionarLinhaTabela(seoReport, "Meta Description", descOk ? (descLengthIdeal ? "✅ OK" : "⚠️ Atenção") : "❌ Falha",
+                descOk ? "Conteúdo: \"" + escapeHtml(metaDesc) + "\" (" + descLength + " caracteres - Ideal: 70-160)" : "Não encontrada");
+        if (!descOk) falhasSeo++;
+
+        // 3. Canonical Tag
+        String canonical = getAttributeSafely("link[rel='canonical']", "href");
+        boolean canonicalOk = canonical != null && !canonical.isBlank();
+        adicionarLinhaTabela(seoReport, "Link Canonical", canonicalOk ? "✅ OK" : "⚠️ Ausente",
+                canonicalOk ? "URL: " + escapeHtml(canonical) : "Recomendado para evitar conteúdo duplicado");
+
+        // 4. Meta Robots
+        String robots = getAttributeSafely("meta[name='robots']", "content");
+        adicionarLinhaTabela(seoReport, "Meta Robots", (robots != null) ? "ℹ️ Definido" : "ℹ️ Padrão",
+                (robots != null) ? "Diretivas: " + escapeHtml(robots) : "Sem tag específica (padrão dos buscadores é indexar)");
+
+        // 5. Open Graph (Redes Sociais)
+        String ogTitle = getAttributeSafely("meta[property='og:title']", "content");
+        String ogImage = getAttributeSafely("meta[property='og:image']", "content");
+        boolean ogOk = ogTitle != null && ogImage != null;
+        adicionarLinhaTabela(seoReport, "Open Graph (og:title / og:image)", ogOk ? "✅ Presente" : "⚠️ Incompleto",
+                "og:title: " + (ogTitle != null ? escapeHtml(ogTitle) : "Ausente") + " | og:image: " + (ogImage != null ? "Presente" : "Ausente"));
+
+        // 6. Hierarquia de Títulos (H1, H2, H3)
+        int h1Count = getPage().locator("h1").count();
+        int h2Count = getPage().locator("h2").count();
+        int h3Count = getPage().locator("h3").count();
+        boolean h1Ok = h1Count == 1;
+        adicionarLinhaTabela(seoReport, "Hierarquia de Headings", h1Ok ? "✅ Ideal" : (h1Count == 0 ? "❌ Crítico" : "⚠️ Múltiplos H1"),
+                "H1: " + h1Count + " (ideal: 1), H2: " + h2Count + ", H3: " + h3Count);
+        if (h1Count == 0) falhasSeo++;
+
+        // 7. Robots.txt e Sitemap.xml
+        String baseUrl = targetUrl.replaceAll("/+$", "");
         try {
-            getPage().waitForLoadState(LoadState.NETWORKIDLE, new Page.WaitForLoadStateOptions().setTimeout(10000));
-        } catch (Exception ignored) { }
+            APIResponse robotsResp = getPage().request().get(baseUrl + "/robots.txt");
+            adicionarLinhaTabela(seoReport, "Arquivo robots.txt", robotsResp.status() == 200 ? "✅ Encontrado" : "⚠️ HTTP " + robotsResp.status(),
+                    "URL: " + baseUrl + "/robots.txt");
+        } catch (Exception e) {
+            adicionarLinhaTabela(seoReport, "Arquivo robots.txt", "⚠️ Erro", e.getMessage());
+        }
 
         try {
-            getPage().evaluate("document.fonts.ready");
-            getPage().addStyleTag(new Page.AddStyleTagOptions().setContent(
-                    "*, *::before, *::after { transition: none !important; animation: none !important; }"
-            ));
-        } catch (Exception ignored) { }
+            APIResponse sitemapResp = getPage().request().get(baseUrl + "/sitemap.xml");
+            adicionarLinhaTabela(seoReport, "Arquivo sitemap.xml", sitemapResp.status() == 200 ? "✅ Encontrado" : "⚠️ HTTP " + sitemapResp.status(),
+                    "URL: " + baseUrl + "/sitemap.xml");
+        } catch (Exception e) {
+            adicionarLinhaTabela(seoReport, "Arquivo sitemap.xml", "⚠️ Erro", e.getMessage());
+        }
+
+        seoReport.append("</table></div>");
+        getRelatorioTeste().info(seoReport.toString());
+
+        assertTrue(falhasSeo == 0, "Foram encontradas " + falhasSeo + " falhas críticas de SEO (Title ausente, Meta Description ausente ou ausência de H1).");
+    }
+
+    @Test
+    @Order(7)
+    @DisplayName("CENÁRIO 7: Auditoria de Segurança Web & Cabeçalhos HTTP")
+    public void auditarSegurancaBasica() {
+        StringBuilder secReport = new StringBuilder();
+        secReport.append("<div style='font-family: Arial, sans-serif;'>");
+        secReport.append("<h4>🔒 Relatório de Auditoria de Segurança</h4>");
+
+        // 1. Cabeçalhos HTTP de Segurança
+        APIResponse response = getPage().request().get(targetUrl);
+        Map<String, String> headers = response.headers();
+
+        secReport.append("<h5>Cabeçalhos de Segurança HTTP Detectados:</h5>");
+        secReport.append("<table style='width:100%; border-collapse: collapse;'>");
+        secReport.append("<tr style='background: #f2f2f2; text-align: left;'>")
+                .append("<th style='padding: 8px; border: 1px solid #ddd;'>Cabeçalho</th>")
+                .append("<th style='padding: 8px; border: 1px solid #ddd;'>Status</th>")
+                .append("<th style='padding: 8px; border: 1px solid #ddd;'>Valor</th></tr>");
+
+        String[] securityHeaders = {
+                "strict-transport-security",
+                "x-content-type-options",
+                "x-frame-options",
+                "content-security-policy",
+                "referrer-policy",
+                "permissions-policy"
+        };
+
+        for (String secHeader : securityHeaders) {
+            String val = headers.get(secHeader);
+            boolean present = val != null && !val.isBlank();
+            adicionarLinhaTabela(secReport, "<code>" + secHeader + "</code>", present ? "✅ Presente" : "⚠️ Ausente",
+                    present ? "<small>" + escapeHtml(val) + "</small>" : "Não configurado no servidor");
+        }
+        secReport.append("</table>");
+
+        // 2. Links externos inseguros (target="_blank" sem rel="noopener" ou "noreferrer")
+        int unsafeLinks = getPage().locator("a[target='_blank']:not([rel*='noopener']):not([rel*='noreferrer'])").count();
+        if (unsafeLinks > 0) {
+            secReport.append("<p style='color: #d9534f; margin-top: 10px;'><strong>⚠️ Vulnerabilidade Tabnabbing:</strong> ")
+                    .append(unsafeLinks).append(" links com target='_blank' sem rel='noopener' ou 'noreferrer' detectados.</p>");
+            registrarEvidencia("Links externos sem noopener/noreferrer",
+                    getPage().screenshot(new Page.ScreenshotOptions().setFullPage(true)));
+        } else {
+            secReport.append("<p style='color: green; margin-top: 10px;'>✅ Todos os links externos utilizam rel='noopener' ou 'noreferrer' (Proteção contra Reverse Tabnabbing).</p>");
+        }
+
+        // 3. Verificação de Conteúdo Misto (HTTP em HTTPS) se a página for HTTPS
+        boolean isHttps = targetUrl.startsWith("https://");
+        int mixedContentCount = 0;
+        if (isHttps) {
+            mixedContentCount = getPage().locator("img[src^='http://'], script[src^='http://'], link[href^='http://'], iframe[src^='http://']").count();
+            if (mixedContentCount > 0) {
+                secReport.append("<p style='color: #d9534f;'><strong>🚨 Mixed Content Detectado:</strong> ")
+                        .append(mixedContentCount).append(" recursos inseguros (HTTP) carregados em página HTTPS.</p>");
+                registrarEvidencia("Mixed Content detectado",
+                        getPage().screenshot(new Page.ScreenshotOptions().setFullPage(true)));
+            } else {
+                secReport.append("<p style='color: green;'>✅ Nenhum recurso de conteúdo misto (Mixed Content) detectado.</p>");
+            }
+        }
+
+        secReport.append("</div>");
+        getRelatorioTeste().info(secReport.toString());
+
+        assertTrue(mixedContentCount == 0, "A página HTTPS não deve carregar recursos inseguros via HTTP (Mixed Content).");
+    }
+
+    @Test
+    @Order(8)
+    @DisplayName("CENÁRIO 8: Auditoria de Performance e Web Vitals")
+    @SuppressWarnings("unchecked")
+    public void auditarPerformanceWebVitals() {
+        String script = "() => {\n" +
+                "    const navEntries = performance.getEntriesByType('navigation');\n" +
+                "    const nav = navEntries.length > 0 ? navEntries[0] : {};\n" +
+                "    const paint = performance.getEntriesByType('paint') || [];\n" +
+                "    const fcpEntry = paint.find(entry => entry.name === 'first-contentful-paint');\n" +
+                "    const resources = performance.getEntriesByType('resource') || [];\n" +
+                "    return {\n" +
+                "        dnsTime: Math.max(0, Math.round((nav.domainLookupEnd || 0) - (nav.domainLookupStart || 0))),\n" +
+                "        tcpTime: Math.max(0, Math.round((nav.connectEnd || 0) - (nav.connectStart || 0))),\n" +
+                "        ttfb: Math.max(0, Math.round((nav.responseStart || 0) - (nav.requestStart || 0))),\n" +
+                "        downloadTime: Math.max(0, Math.round((nav.responseEnd || 0) - (nav.responseStart || 0))),\n" +
+                "        domInteractive: Math.max(0, Math.round(nav.domInteractive || 0)),\n" +
+                "        domContentLoaded: Math.max(0, Math.round(nav.domContentLoadedEventEnd || 0)),\n" +
+                "        loadTime: Math.max(0, Math.round(nav.loadEventEnd || 0)),\n" +
+                "        fcp: fcpEntry ? Math.round(fcpEntry.startTime) : -1,\n" +
+                "        resourcesCount: resources.length\n" +
+                "    };\n" +
+                "}";
+
+        Map<String, Object> metrics = (Map<String, Object>) getPage().evaluate(script);
+
+        long ttfb = ((Number) metrics.getOrDefault("ttfb", 0)).longValue();
+        long fcp = ((Number) metrics.getOrDefault("fcp", -1)).longValue();
+        long domContentLoaded = ((Number) metrics.getOrDefault("domContentLoaded", 0)).longValue();
+        long loadTime = ((Number) metrics.getOrDefault("loadTime", 0)).longValue();
+        long resourcesCount = ((Number) metrics.getOrDefault("resourcesCount", 0)).longValue();
+
+        StringBuilder perfReport = new StringBuilder();
+        perfReport.append("<div style='font-family: Arial, sans-serif;'>");
+        perfReport.append("<h4>⚡ Relatório de Performance & Web Vitals</h4>");
+        perfReport.append("<div style='display: flex; gap: 10px; flex-wrap: wrap; margin-bottom: 15px;'>");
+
+        adicionarCardMetrica(perfReport, "TTFB (Time to First Byte)", ttfb + " ms", ttfb <= 800 ? "#5cb85c" : (ttfb <= 1800 ? "#f0ad4e" : "#d9534f"), "Meta: < 800ms");
+        if (fcp >= 0) {
+            adicionarCardMetrica(perfReport, "FCP (First Contentful Paint)", fcp + " ms", fcp <= 1800 ? "#5cb85c" : (fcp <= 3000 ? "#f0ad4e" : "#d9534f"), "Meta: < 1.8s");
+        }
+        adicionarCardMetrica(perfReport, "DOM Content Loaded", domContentLoaded + " ms", "#337ab7", "Estrutura pronta");
+        adicionarCardMetrica(perfReport, "Load Completo", loadTime + " ms", loadTime <= 4000 ? "#5cb85c" : "#f0ad4e", "Meta: < 4.0s");
+        adicionarCardMetrica(perfReport, "Requisições de Assets", String.valueOf(resourcesCount), "#777", "CSS, JS, Imagens");
+
+        perfReport.append("</div></div>");
+        getRelatorioTeste().info(perfReport.toString());
+
+        // Verificação de tolerância para TTFB máximo
+        assertTrue(ttfb < 8000, "O TTFB (Time to First Byte) excedeu a tolerância máxima. Servidor demorou: " + ttfb + "ms");
+    }
+
+    @Test
+    @Order(9)
+    @DisplayName("CENÁRIO 9: Auditoria de Regressão Visual")
+    public void auditarConsistenciaVisual() {
+        getPage().waitForLoadState(LoadState.NETWORKIDLE);
+        try {
+            getPage().evaluate("() => document.fonts.ready");
+            getPage().evaluate("() => {" +
+                    "  const style = document.createElement('style');" +
+                    "  style.innerHTML = '*, *::before, *::after { transition: none !important; animation: none !important; }';" +
+                    "  document.head.appendChild(style);" +
+                    "}");
+            Thread.sleep(500);
+        } catch (InterruptedException e) {
+            Thread.currentThread().interrupt();
+        }
 
         // Suporte multiplataforma (Windows vs Linux CI) para evitar falso-positivo de antialiasing de fontes
         String os = System.getProperty("os.name", "").toLowerCase().contains("win") ? "win" : "linux";
@@ -234,251 +494,6 @@ public class AuditTest extends BaseTest {
         registrarEvidencia("Diff visual: " + diffFileName, diffBytes);
 
         return fraction;
-    }
-
-    @Test
-    @DisplayName("CENÁRIO 4: Verificação de imagens com texto alternativo")
-    public void verificarImagensAlt() {
-        int imagensSemAlt = getPage().locator("img:not([alt]), img[alt='']").count();
-        if (imagensSemAlt > 0) {
-            registrarEvidencia("Imagens sem atributo alt ou com alt vazio",
-                    getPage().screenshot(new Page.ScreenshotOptions().setFullPage(true)));
-        }
-
-        assertTrue(imagensSemAlt == 0,
-                "Todas as imagens devem ter atributo alt para acessibilidade.");
-    }
-
-    @Test
-    @DisplayName("CENÁRIO 5: Verificação de links básicos")
-    public void verificarLinksValidos() {
-        int linksInvalidos = getPage().locator("a:not([href]), a[href=''], a[href^='javascript:']").count();
-        if (linksInvalidos > 0) {
-            registrarEvidencia("Links inválidos ou sem href detectados",
-                    getPage().screenshot(new Page.ScreenshotOptions().setFullPage(true)));
-        }
-
-        assertTrue(linksInvalidos == 0,
-                "Todos os links devem ter href válidos e não usar javascript:.");
-    }
-
-    @Test
-    @DisplayName("CENÁRIO 3: Verificação básica da página inicial")
-    public void verificarPaginaInicial() {
-        String pageTitle = getPage().title();
-        getRelatorioTeste().info("Título da página carregada: " + pageTitle);
-
-        assertTrue(pageTitle != null && !pageTitle.isBlank(),
-                "O título da página não pode estar vazio.");
-
-        int headingCount = getPage().locator("main h1, main h2, header h1, header h2").count();
-        if (headingCount == 0) {
-            registrarEvidencia("Página inicial sem título detectado",
-                    getPage().screenshot(new Page.ScreenshotOptions().setFullPage(true)));
-        }
-        assertTrue(headingCount > 0,
-                "A página inicial deve conter pelo menos um título dentro de main ou header.");
-    }
-
-    @Test
-    @DisplayName("CENÁRIO 6: Auditoria de SEO Técnico")
-    public void auditarSeoTecnico() {
-        StringBuilder seoReport = new StringBuilder();
-        seoReport.append("<div style='font-family: Arial, sans-serif;'>");
-        seoReport.append("<h4>🔍 Relatório de Auditoria de SEO Técnico</h4>");
-        seoReport.append("<table style='width:100%; border-collapse: collapse; margin-top: 10px;'>");
-        seoReport.append("<tr style='background: #f2f2f2; text-align: left;'>")
-                .append("<th style='padding: 8px; border: 1px solid #ddd;'>Item</th>")
-                .append("<th style='padding: 8px; border: 1px solid #ddd;'>Status</th>")
-                .append("<th style='padding: 8px; border: 1px solid #ddd;'>Detalhes</th></tr>");
-
-        int falhasSeo = 0;
-
-        // 1. Title
-        String title = getPage().title();
-        boolean titleOk = title != null && !title.isBlank();
-        int titleLength = titleOk ? title.length() : 0;
-        boolean titleLengthIdeal = titleLength >= 30 && titleLength <= 65;
-        adicionarLinhaTabela(seoReport, "Tag &lt;title&gt;", titleOk ? (titleLengthIdeal ? "✅ OK" : "⚠️ Atenção") : "❌ Falha",
-                titleOk ? "Conteúdo: \"" + escapeHtml(title) + "\" (" + titleLength + " caracteres - Ideal: 30-65)" : "Não encontrada");
-        if (!titleOk) falhasSeo++;
-
-        // 2. Meta Description
-        String metaDesc = getAttributeSafely("meta[name='description']", "content");
-        boolean descOk = metaDesc != null && !metaDesc.isBlank();
-        int descLength = descOk ? metaDesc.length() : 0;
-        boolean descLengthIdeal = descLength >= 70 && descLength <= 160;
-        adicionarLinhaTabela(seoReport, "Meta Description", descOk ? (descLengthIdeal ? "✅ OK" : "⚠️ Atenção") : "❌ Falha",
-                descOk ? "Conteúdo: \"" + escapeHtml(metaDesc) + "\" (" + descLength + " caracteres - Ideal: 70-160)" : "Não encontrada");
-        if (!descOk) falhasSeo++;
-
-        // 3. Canonical Tag
-        String canonical = getAttributeSafely("link[rel='canonical']", "href");
-        boolean canonicalOk = canonical != null && !canonical.isBlank();
-        adicionarLinhaTabela(seoReport, "Link Canonical", canonicalOk ? "✅ OK" : "⚠️ Ausente",
-                canonicalOk ? "URL: " + escapeHtml(canonical) : "Recomendado para evitar conteúdo duplicado");
-
-        // 4. Meta Robots
-        String robots = getAttributeSafely("meta[name='robots']", "content");
-        adicionarLinhaTabela(seoReport, "Meta Robots", (robots != null) ? "ℹ️ Definido" : "ℹ️ Padrão",
-                (robots != null) ? "Diretivas: " + escapeHtml(robots) : "Sem tag específica (padrão dos buscadores é indexar)");
-
-        // 5. Open Graph (Redes Sociais)
-        String ogTitle = getAttributeSafely("meta[property='og:title']", "content");
-        String ogImage = getAttributeSafely("meta[property='og:image']", "content");
-        boolean ogOk = ogTitle != null && ogImage != null;
-        adicionarLinhaTabela(seoReport, "Open Graph (og:title / og:image)", ogOk ? "✅ Presente" : "⚠️ Incompleto",
-                "og:title: " + (ogTitle != null ? escapeHtml(ogTitle) : "Ausente") + " | og:image: " + (ogImage != null ? "Presente" : "Ausente"));
-
-        // 6. Hierarquia de Títulos (H1, H2, H3)
-        int h1Count = getPage().locator("h1").count();
-        int h2Count = getPage().locator("h2").count();
-        int h3Count = getPage().locator("h3").count();
-        boolean h1Ok = h1Count == 1;
-        adicionarLinhaTabela(seoReport, "Hierarquia de Headings", h1Ok ? "✅ Ideal" : (h1Count == 0 ? "❌ Crítico" : "⚠️ Múltiplos H1"),
-                "H1: " + h1Count + " (ideal: 1), H2: " + h2Count + ", H3: " + h3Count);
-        if (h1Count == 0) falhasSeo++;
-
-        // 7. Robots.txt e Sitemap.xml
-        String baseUrl = targetUrl.replaceAll("/+$", "");
-        try {
-            APIResponse robotsResp = getPage().request().get(baseUrl + "/robots.txt");
-            adicionarLinhaTabela(seoReport, "Arquivo robots.txt", robotsResp.status() == 200 ? "✅ Encontrado" : "⚠️ HTTP " + robotsResp.status(),
-                    "URL: " + baseUrl + "/robots.txt");
-        } catch (Exception e) {
-            adicionarLinhaTabela(seoReport, "Arquivo robots.txt", "⚠️ Erro", e.getMessage());
-        }
-
-        try {
-            APIResponse sitemapResp = getPage().request().get(baseUrl + "/sitemap.xml");
-            adicionarLinhaTabela(seoReport, "Arquivo sitemap.xml", sitemapResp.status() == 200 ? "✅ Encontrado" : "⚠️ HTTP " + sitemapResp.status(),
-                    "URL: " + baseUrl + "/sitemap.xml");
-        } catch (Exception e) {
-            adicionarLinhaTabela(seoReport, "Arquivo sitemap.xml", "⚠️ Erro", e.getMessage());
-        }
-
-        seoReport.append("</table></div>");
-        getRelatorioTeste().info(seoReport.toString());
-
-        assertTrue(falhasSeo == 0, "Foram encontradas " + falhasSeo + " falhas críticas de SEO (Title ausente, Meta Description ausente ou ausência de H1).");
-    }
-
-    @Test
-    @DisplayName("CENÁRIO 7: Auditoria de Segurança Web & Cabeçalhos HTTP")
-    public void auditarSegurancaBasica() {
-        StringBuilder secReport = new StringBuilder();
-        secReport.append("<div style='font-family: Arial, sans-serif;'>");
-        secReport.append("<h4>🔒 Relatório de Auditoria de Segurança</h4>");
-
-        // 1. Cabeçalhos HTTP de Segurança
-        APIResponse response = getPage().request().get(targetUrl);
-        Map<String, String> headers = response.headers();
-
-        secReport.append("<h5>Cabeçalhos de Segurança HTTP Detectados:</h5>");
-        secReport.append("<table style='width:100%; border-collapse: collapse;'>");
-        secReport.append("<tr style='background: #f2f2f2; text-align: left;'>")
-                .append("<th style='padding: 8px; border: 1px solid #ddd;'>Cabeçalho</th>")
-                .append("<th style='padding: 8px; border: 1px solid #ddd;'>Status</th>")
-                .append("<th style='padding: 8px; border: 1px solid #ddd;'>Valor</th></tr>");
-
-        String[] securityHeaders = {
-                "strict-transport-security",
-                "x-content-type-options",
-                "x-frame-options",
-                "content-security-policy",
-                "referrer-policy",
-                "permissions-policy"
-        };
-
-        for (String secHeader : securityHeaders) {
-            String val = headers.get(secHeader);
-            boolean present = val != null && !val.isBlank();
-            adicionarLinhaTabela(secReport, "<code>" + secHeader + "</code>", present ? "✅ Presente" : "⚠️ Ausente",
-                    present ? "<small>" + escapeHtml(val) + "</small>" : "Não configurado no servidor");
-        }
-        secReport.append("</table>");
-
-        // 2. Links externos inseguros (target="_blank" sem rel="noopener" ou "noreferrer")
-        int unsafeLinks = getPage().locator("a[target='_blank']:not([rel*='noopener']):not([rel*='noreferrer'])").count();
-        if (unsafeLinks > 0) {
-            secReport.append("<p style='color: #d9534f; margin-top: 10px;'><strong>⚠️ Vulnerabilidade Tabnabbing:</strong> ")
-                    .append(unsafeLinks).append(" links com target='_blank' sem rel='noopener' ou 'noreferrer' detectados.</p>");
-            registrarEvidencia("Links externos sem noopener/noreferrer",
-                    getPage().screenshot(new Page.ScreenshotOptions().setFullPage(true)));
-        } else {
-            secReport.append("<p style='color: green; margin-top: 10px;'>✅ Todos os links externos utilizam rel='noopener' ou 'noreferrer' (Proteção contra Reverse Tabnabbing).</p>");
-        }
-
-        // 3. Verificação de Conteúdo Misto (HTTP em HTTPS) se a página for HTTPS
-        boolean isHttps = targetUrl.startsWith("https://");
-        int mixedContentCount = 0;
-        if (isHttps) {
-            mixedContentCount = getPage().locator("img[src^='http://'], script[src^='http://'], link[href^='http://'], iframe[src^='http://']").count();
-            if (mixedContentCount > 0) {
-                secReport.append("<p style='color: #d9534f;'><strong>🚨 Mixed Content Detectado:</strong> ")
-                        .append(mixedContentCount).append(" recursos inseguros (HTTP) carregados em página HTTPS.</p>");
-                registrarEvidencia("Mixed Content detectado",
-                        getPage().screenshot(new Page.ScreenshotOptions().setFullPage(true)));
-            } else {
-                secReport.append("<p style='color: green;'>✅ Nenhum recurso de conteúdo misto (Mixed Content) detectado.</p>");
-            }
-        }
-
-        secReport.append("</div>");
-        getRelatorioTeste().info(secReport.toString());
-
-        assertTrue(mixedContentCount == 0, "A página HTTPS não deve carregar recursos inseguros via HTTP (Mixed Content).");
-    }
-
-    @Test
-    @DisplayName("CENÁRIO 8: Auditoria de Performance e Web Vitals")
-    @SuppressWarnings("unchecked")
-    public void auditarPerformanceWebVitals() {
-        String script = "() => {\n" +
-                "    const navEntries = performance.getEntriesByType('navigation');\n" +
-                "    const nav = navEntries.length > 0 ? navEntries[0] : {};\n" +
-                "    const paint = performance.getEntriesByType('paint') || [];\n" +
-                "    const fcpEntry = paint.find(entry => entry.name === 'first-contentful-paint');\n" +
-                "    const resources = performance.getEntriesByType('resource') || [];\n" +
-                "    return {\n" +
-                "        dnsTime: Math.max(0, Math.round((nav.domainLookupEnd || 0) - (nav.domainLookupStart || 0))),\n" +
-                "        tcpTime: Math.max(0, Math.round((nav.connectEnd || 0) - (nav.connectStart || 0))),\n" +
-                "        ttfb: Math.max(0, Math.round((nav.responseStart || 0) - (nav.requestStart || 0))),\n" +
-                "        downloadTime: Math.max(0, Math.round((nav.responseEnd || 0) - (nav.responseStart || 0))),\n" +
-                "        domInteractive: Math.max(0, Math.round(nav.domInteractive || 0)),\n" +
-                "        domContentLoaded: Math.max(0, Math.round(nav.domContentLoadedEventEnd || 0)),\n" +
-                "        loadTime: Math.max(0, Math.round(nav.loadEventEnd || 0)),\n" +
-                "        fcp: fcpEntry ? Math.round(fcpEntry.startTime) : -1,\n" +
-                "        resourcesCount: resources.length\n" +
-                "    };\n" +
-                "}";
-
-        Map<String, Object> metrics = (Map<String, Object>) getPage().evaluate(script);
-
-        long ttfb = ((Number) metrics.getOrDefault("ttfb", 0)).longValue();
-        long fcp = ((Number) metrics.getOrDefault("fcp", -1)).longValue();
-        long domContentLoaded = ((Number) metrics.getOrDefault("domContentLoaded", 0)).longValue();
-        long loadTime = ((Number) metrics.getOrDefault("loadTime", 0)).longValue();
-        long resourcesCount = ((Number) metrics.getOrDefault("resourcesCount", 0)).longValue();
-
-        StringBuilder perfReport = new StringBuilder();
-        perfReport.append("<div style='font-family: Arial, sans-serif;'>");
-        perfReport.append("<h4>⚡ Relatório de Performance & Web Vitals</h4>");
-        perfReport.append("<div style='display: flex; gap: 10px; flex-wrap: wrap; margin-bottom: 15px;'>");
-
-        adicionarCardMetrica(perfReport, "TTFB (Time to First Byte)", ttfb + " ms", ttfb <= 800 ? "#5cb85c" : (ttfb <= 1800 ? "#f0ad4e" : "#d9534f"), "Meta: < 800ms");
-        if (fcp >= 0) {
-            adicionarCardMetrica(perfReport, "FCP (First Contentful Paint)", fcp + " ms", fcp <= 1800 ? "#5cb85c" : (fcp <= 3000 ? "#f0ad4e" : "#d9534f"), "Meta: < 1.8s");
-        }
-        adicionarCardMetrica(perfReport, "DOM Content Loaded", domContentLoaded + " ms", "#337ab7", "Estrutura pronta");
-        adicionarCardMetrica(perfReport, "Load Completo", loadTime + " ms", loadTime <= 4000 ? "#5cb85c" : "#f0ad4e", "Meta: < 4.0s");
-        adicionarCardMetrica(perfReport, "Requisições de Assets", String.valueOf(resourcesCount), "#777", "CSS, JS, Imagens");
-
-        perfReport.append("</div></div>");
-        getRelatorioTeste().info(perfReport.toString());
-
-        // Verificação de tolerância para TTFB máximo
-        assertTrue(ttfb < 8000, "O TTFB (Time to First Byte) excedeu a tolerância máxima. Servidor demorou: " + ttfb + "ms");
     }
 
     private String getAttributeSafely(String selector, String attribute) {
