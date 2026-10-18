@@ -83,6 +83,25 @@ public class BaseTest {
         indexSpark.config().setDocumentTitle("Relatório de Auditoria Web");
         indexSpark.config().setReportName("QA Audit Toolkit");
 
+        String customCss =
+                "#parent-analysis, #events-analysis { min-height: 90px !important; }\n" +
+                "#timeline { min-height: 120px !important; }";
+
+        String customJs =
+                "$(document).ready(function() {\n" +
+                "    function fixCharts() {\n" +
+                "        setTimeout(function() { window.dispatchEvent(new Event('resize')); }, 150);\n" +
+                "    }\n" +
+                "    $('[onclick*=\"dashboard-view\"], #nav-dashboard, .fa-bar-chart').on('click', fixCharts);\n" +
+                "    window.addEventListener('hashchange', fixCharts);\n" +
+                "    fixCharts();\n" +
+                "});";
+
+        spark.config().setCss(customCss);
+        spark.config().setJs(customJs);
+        indexSpark.config().setCss(customCss);
+        indexSpark.config().setJs(customJs);
+
         extent = new ExtentReports();
         ensureOutputDirectories();
         extent.attachReporter(spark, indexSpark);
