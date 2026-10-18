@@ -208,11 +208,11 @@ public class AiAdvisorService {
         String badgeColor = isAiEnabled() ? "background: linear-gradient(135deg, #8a2387, #e94057, #f27121);" : "background: #4b6cb7;";
 
         return "<div style='margin-top: 15px; border-radius: 8px; border: 1px solid #e1e4e8; background: #ffffff; box-shadow: 0 4px 12px rgba(0,0,0,0.05); overflow: hidden; font-family: -apple-system, BlinkMacSystemFont, Segoe UI, Roboto, Helvetica, Arial, sans-serif;'>" +
-                "<div style='background: #24292e; color: #ffffff; padding: 10px 16px; display: flex; align-items: center; justify-content: space-between;'>" +
-                "<div style='display: flex; align-items: center; gap: 8px; font-weight: 600; font-size: 14px;'>" +
+                "<div style='background: #24292e; color: #ffffff; padding: 10px 16px; display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 8px;'>" +
+                "<div style='display: flex; align-items: center; gap: 8px; font-weight: 600; font-size: 13.5px;'>" +
                 "<span style='font-size: 18px;'>🤖</span> <span>Agente de IA: " + category + "</span>" +
                 "</div>" +
-                "<span style='" + badgeColor + " color: white; padding: 3px 10px; border-radius: 12px; font-size: 11px; font-weight: bold;'>" + badge + "</span>" +
+                "<span style='" + badgeColor + " color: white; padding: 4px 12px; border-radius: 12px; font-size: 11px; font-weight: bold; white-space: nowrap;'>" + badge + "</span>" +
                 "</div>" +
                 "<div style='padding: 16px; font-size: 13.5px; line-height: 1.6; color: #24292e;'>" +
                 contentHtml +
