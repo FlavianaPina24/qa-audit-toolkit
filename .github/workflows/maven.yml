@@ -41,6 +41,8 @@ jobs:
         run: mvn exec:java -e -D exec.mainClass=com.microsoft.playwright.CLI -D exec.args="install chromium --with-deps"
 
       - name: Run QA Audit Tests
+        env:
+          GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
         run: mvn -B test -Dvisual.threshold=0.25
 
       - name: Upload Audit Reports & Screenshots (Artifacts)

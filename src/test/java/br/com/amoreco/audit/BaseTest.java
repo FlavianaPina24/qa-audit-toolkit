@@ -160,6 +160,8 @@ public class BaseTest {
         contextThread.set(newContext);
 
         Page newPage = newContext.newPage();
+        newPage.setDefaultTimeout(60000);
+        newPage.setDefaultNavigationTimeout(60000);
         pageThread.set(newPage);
     }
 

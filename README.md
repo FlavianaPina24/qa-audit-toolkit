@@ -7,10 +7,23 @@
 [![JUnit 5](https://img.shields.io/badge/JUnit-5.10-25A162?logo=junit5&logoColor=white)](https://junit.org/junit5/)
 [![ExtentReports](https://img.shields.io/badge/ExtentReports-5.1-orange)](http://extentreports.com)
 [![GitHub Pages](https://img.shields.io/badge/Dashboard-GitHub%20Pages-2ea44f?logo=githubpages&logoColor=white)](https://flavianapina24.github.io/qa-audit-toolkit/)
+[![AI Powered](https://img.shields.io/badge/AI%20Agent-Google%20Gemini-8a2387?logo=googlegemini&logoColor=white)](https://ai.google.dev/)
 
-**QA Audit Toolkit** é um framework moderno e extensível de **Auditoria Automatizada de Qualidade Web**, construído sobre **Java, Playwright, Axe-Core e JUnit 5**.
+**QA Audit Toolkit** é um framework moderno e extensível de **Auditoria Automatizada de Qualidade Web**, construído sobre **Java, Playwright, Axe-Core e JUnit 5**, potencializado por um **Agente de IA (Google Gemini)** para consultoria e sugestão de correções em tempo real.
 
 Ele foi projetado para avaliar sites e aplicações web sob múltiplos pilares de engenharia de qualidade: **Acessibilidade Digital (WCAG 2.1)**, **SEO Técnico**, **Performance & Web Vitals**, **Segurança Web**, **Regressão Visual** e **Integridade de Links**.
+
+---
+
+## 🤖 Agente de IA Consultor de Qualidade (Google Gemini)
+
+O toolkit conta com um **Agente de IA Integrado (`AiAdvisorService`)** que atua como um consultor de QA & DevSecOps Blue Team diretamente no relatório:
+
+- **Acessibilidade (WCAG 2.1):** Diagnostica a causa raiz das violações encontradas pelo Axe-Core e sugere o código HTML/CSS exato para correção.
+- **Segurança Web & DevSecOps:** Analisa cabeçalhos ausentes e gera a configuração exata pronta para Nginx, Apache ou Cloudflare (HSTS, CSP, X-Frame-Options), além de prevenção contra Reverse Tabnabbing.
+- **SEO Técnico:** Avalia títulos, meta descriptions e canonical tags, sugerindo snippets completos de metatags otimizadas.
+- **Performance & Web Vitals:** Analisa métricas de TTFB, FCP e requisições, orientando sobre compressão Brotli/Gzip, Edge Caching e formatos de imagem modernos.
+- **Modo Híbrido:** Funciona em modo heurístico offline por padrão e se conecta automaticamente ao **Google Gemini 2.5 Flash** quando a variável de ambiente `GEMINI_API_KEY` estiver configurada!
 
 ---
 

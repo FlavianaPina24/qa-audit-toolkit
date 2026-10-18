@@ -1,5 +1,6 @@
 package br.com.amoreco.audit;
 
+import br.com.amoreco.audit.ai.AiAdvisorService;
 import com.deque.html.axecore.playwright.AxeBuilder;
 import com.deque.html.axecore.results.AxeResults;
 import com.deque.html.axecore.results.CheckedNode;
@@ -78,7 +79,8 @@ public class AuditTest extends BaseTest {
 
         if (!violations.isEmpty()) {
             String htmlReport = formatarViolacoesAxe(violations);
-            getRelatorioTeste().warning(htmlReport);
+            String aiAdvice = AiAdvisorService.getAccessibilityRecommendations(violations);
+            getRelatorioTeste().warning(htmlReport + aiAdvice);
             registrarEvidencia("Violações de Acessibilidade Detectadas",
                     getPage().screenshot(new Page.ScreenshotOptions().setFullPage(true)));
         } else {
@@ -242,6 +244,8 @@ public class AuditTest extends BaseTest {
         }
 
         seoReport.append("</table></div>");
+        String aiAdvice = AiAdvisorService.getSeoRecommendations(title, metaDesc, canonical, h1Count);
+        seoReport.append(aiAdvice);
         getRelatorioTeste().info(seoReport.toString());
 
         assertTrue(falhasSeo == 0, "Foram encontradas " + falhasSeo + " falhas críticas de SEO (Title ausente, Meta Description ausente ou ausência de H1).");
@@ -310,6 +314,8 @@ public class AuditTest extends BaseTest {
         }
 
         secReport.append("</div>");
+        String aiAdvice = AiAdvisorService.getSecurityRecommendations(headers, unsafeLinks, mixedContentCount);
+        secReport.append(aiAdvice);
         getRelatorioTeste().info(secReport.toString());
 
         assertTrue(mixedContentCount == 0, "A página HTTPS não deve carregar recursos inseguros via HTTP (Mixed Content).");
@@ -361,6 +367,8 @@ public class AuditTest extends BaseTest {
         adicionarCardMetrica(perfReport, "Requisições de Assets", String.valueOf(resourcesCount), "#777", "CSS, JS, Imagens");
 
         perfReport.append("</div></div>");
+        String aiAdvice = AiAdvisorService.getPerformanceRecommendations(ttfb, fcp, loadTime, resourcesCount);
+        perfReport.append(aiAdvice);
         getRelatorioTeste().info(perfReport.toString());
 
         // Verificação de tolerância para TTFB máximo
