@@ -1,11 +1,12 @@
 # 🚀 QA Audit Toolkit
 
-[![Java CI & QA Audit](https://github.com/flavianapina/qa-audit-toolkit/actions/workflows/maven.yml/badge.svg)](https://github.com/flavianapina/qa-audit-toolkit/actions/workflows/maven.yml)
+[![Java CI & QA Audit](https://github.com/FlavianaPina24/qa-audit-toolkit/actions/workflows/maven.yml/badge.svg)](https://github.com/FlavianaPina24/qa-audit-toolkit/actions/workflows/maven.yml)
 [![Java 17+](https://img.shields.io/badge/Java-17%2B-ED8B00?logo=openjdk&logoColor=white)](https://adoptium.net)
 [![Playwright](https://img.shields.io/badge/Playwright-1.46-2EAD33?logo=playwright&logoColor=white)](https://playwright.dev/java/)
 [![Axe-Core](https://img.shields.io/badge/Axe--Core-4.10-blue)](https://www.deque.com/axe/)
 [![JUnit 5](https://img.shields.io/badge/JUnit-5.10-25A162?logo=junit5&logoColor=white)](https://junit.org/junit5/)
 [![ExtentReports](https://img.shields.io/badge/ExtentReports-5.1-orange)](http://extentreports.com)
+[![GitHub Pages](https://img.shields.io/badge/Dashboard-GitHub%20Pages-2ea44f?logo=githubpages&logoColor=white)](https://flavianapina24.github.io/qa-audit-toolkit/)
 
 **QA Audit Toolkit** é um framework moderno e extensível de **Auditoria Automatizada de Qualidade Web**, construído sobre **Java, Playwright, Axe-Core e JUnit 5**.
 
@@ -106,6 +107,11 @@ O projeto inclui um fluxo de integração contínua configurado em [`.github/wor
 - Instala os navegadores do Playwright (`install --with-deps`).
 - Executa a suíte de auditoria.
 - **Armazena os relatórios:** Publica como artefato (`qa-audit-reports`) os relatórios HTML, capturas de tela e relatórios Surefire para consulta no GitHub.
+- **Dashboard Online (GitHub Pages):** Publica automaticamente a versão mais recente do relatório interativo no GitHub Pages em:
+  👉 **`https://flavianapina24.github.io/qa-audit-toolkit/`**
+
+> **Dica de Configuração Inicial no GitHub:**  
+> Acesse **Settings** > **Pages** no repositório do GitHub e em **Source** selecione **"GitHub Actions"**. A partir disso, todo push atualizará a página pública instantaneamente!
 
 ---
 

@@ -78,9 +78,14 @@ public class BaseTest {
         ExtentSparkReporter spark = new ExtentSparkReporter("target/Auditoria_Website_" + dataHora + ".html");
         spark.config().setDocumentTitle("Relatório de Auditoria Web");
         spark.config().setReportName("QA Audit Toolkit");
+
+        ExtentSparkReporter indexSpark = new ExtentSparkReporter("target/index.html");
+        indexSpark.config().setDocumentTitle("Relatório de Auditoria Web");
+        indexSpark.config().setReportName("QA Audit Toolkit");
+
         extent = new ExtentReports();
         ensureOutputDirectories();
-        extent.attachReporter(spark);
+        extent.attachReporter(spark, indexSpark);
 
         Map<String, String> env = new HashMap<>();
         env.put("PLAYWRIGHT_SKIP_VALIDATE_HOST_REQUIREMENTS", "true");
